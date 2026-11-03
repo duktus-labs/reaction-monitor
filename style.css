@@ -140,17 +140,20 @@ body {
   line-height: 1.65;
 }
 
-/* overall banner */
+/* overall banner — default is neutral grey. Green only with data-status=operational. */
 .banner {
   display: flex;
   align-items: center;
   gap: 13px;
-  border: 1px solid var(--op-border);
-  background: var(--op-bg);
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--none) 42%, var(--card));
   border-radius: 11px;
   padding: 16px 18px;
   margin-bottom: 14px;
+  min-height: 76px;
 }
+.banner[data-status="unknown"] { background: color-mix(in oklch, var(--none) 42%, var(--card)); border-color: var(--border); }
+.banner[data-status="operational"] { background: var(--op-bg); border-color: var(--op-border); }
 .banner[data-status="degraded"] { background: var(--deg-bg); border-color: var(--deg-border); }
 .banner[data-status="down"]     { background: var(--down-bg); border-color: var(--down-border); }
 .banner[data-status="maintenance"] { background: var(--maint-bg); border-color: var(--maint-border); }
@@ -163,26 +166,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--op);
-  color: oklch(0.99 0.005 152);
+  background: var(--none);
+  color: var(--text);
 }
+.banner[data-status="unknown"] .banner-icon { background: var(--none); color: var(--text); }
+.banner[data-status="operational"] .banner-icon { background: var(--op); color: oklch(0.99 0.005 152); }
 .banner[data-status="degraded"] .banner-icon { background: var(--deg); color: var(--deg-ink); }
 .banner[data-status="down"] .banner-icon { background: var(--down); color: oklch(0.99 0.005 27); }
 .banner[data-status="maintenance"] .banner-icon { background: var(--maint); color: oklch(0.99 0.005 248); }
 
 .banner-title { font-size: 15px; font-weight: 600; letter-spacing: -0.006em; }
 .banner-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-
-/* staleness notice */
-.stale {
-  font-size: 12px;
-  color: var(--deg-ink);
-  background: var(--deg-bg);
-  border: 1px solid var(--deg-border);
-  border-radius: 9px;
-  padding: 10px 13px;
-  margin-bottom: 14px;
-}
 
 /* section labels */
 .section-label {
@@ -194,7 +188,8 @@ body {
   margin: 30px 0 15px;
 }
 
-/* component rows */
+/* component rows — min-height reserves the five rows so the first paint does not jump */
+.components { min-height: 460px; }
 .row { padding: 14px 0; border-top: 1px solid var(--line); }
 .row:first-child { border-top: none; }
 .row-top {
@@ -216,6 +211,15 @@ body {
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+  background: var(--none);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--none) 55%, transparent);
+}
+.dot[data-status="unknown"],
+.dot[data-status="none"] {
+  background: var(--none);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--none) 55%, transparent);
+}
+.dot[data-status="operational"] {
   background: var(--op);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--op) 16%, transparent);
 }
@@ -236,7 +240,10 @@ body {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  min-width: 9.5rem;
+  text-align: right;
 }
+.row-pct[data-unavailable="true"] { font-variant-numeric: normal; }
 
 /* 90-day bar */
 .bar {
@@ -250,9 +257,10 @@ body {
   min-width: 0;
   height: 100%;
   border-radius: 2px;
-  background: var(--op);
+  background: var(--none);
   transition: filter 0.12s var(--ease);
 }
+.bar i[data-status="operational"] { background: var(--op); }
 .bar i[data-status="degraded"] { background: var(--deg); }
 .bar i[data-status="down"]     { background: var(--down); }
 .bar i[data-status="maintenance"] { background: var(--maint); }
@@ -276,6 +284,7 @@ body {
 }
 
 /* incidents */
+.incidents { min-height: 48px; }
 .incident-empty {
   font-size: 13px;
   color: var(--muted);

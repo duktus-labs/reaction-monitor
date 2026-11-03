@@ -1,25 +1,15 @@
 'use strict';
 
-// Render order + display labels for the five components.
-var ORDER = ['web', 'chat', 'doku', 'voice', 'b2b'];
-var LABELS = {
-  web: 'Web-App',
-  chat: 'Chat & KI',
-  doku: 'Doku-Modus',
-  voice: 'Voice & Transkription',
-  b2b: 'B2B-API',
-};
-var STATUS_DE = {
-  operational: 'betriebsbereit',
-  degraded: 'eingeschränkt',
-  down: 'Störung',
-  maintenance: 'Wartung',
-  none: 'keine Daten',
-};
+import {
+  COMPONENTS,
+  LABELS,
+  STATUS_DE,
+  measurementSummary,
+  presentFromSource,
+} from './scripts/present.mjs';
+
 var REFRESH_MS = 60000;
 var HISTORY_DAYS = 90;
-var STALE_MINUTES = 15;
-var CHECK_INTERVAL_MIN = 5; // checker cadence — one bucket check ≈ 5 minutes
 var SVG_NS = 'http://www.w3.org/2000/svg';
 
 // First paint animates; refreshes (every 60s) do not.
@@ -28,18 +18,26 @@ var firstPaint = true;
 function getJson(path) {
   // Cache-bust so an open tab always sees the latest committed data.
   return fetch(path + '?t=' + Date.now()).then(function (res) {
-    if (!res.ok) throw new Error(path + ' ' + res.status);
-    return res.json();
+    if (res.status === 404) {
+      var missing = new Error(path + ' missing');
+      missing.reason = 'missing';
+      throw missing;
+    }
+    if (!res.ok) {
+      var bad = new Error(path + ' ' + res.status);
+      bad.reason = 'malformed';
+      throw bad;
+    }
+    return res.text().then(function (text) {
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        var mal = new Error(path + ' malformed');
+        mal.reason = 'malformed';
+        throw mal;
+      }
+    });
   });
-}
-
-function relativeTime(iso) {
-  var min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (min < 1) return 'gerade eben';
-  if (min === 1) return 'vor 1 Minute';
-  if (min < 60) return 'vor ' + min + ' Minuten';
-  var h = Math.round(min / 60);
-  return h === 1 ? 'vor 1 Stunde' : 'vor ' + h + ' Stunden';
 }
 
 function formatDate(key) {
@@ -47,26 +45,21 @@ function formatDate(key) {
   return p[2] + '.' + p[1] + '.' + p[0];
 }
 
-// Estimate a duration from a count of 5-minute checks.
-function formatDuration(checks) {
-  var min = checks * CHECK_INTERVAL_MIN;
-  if (min < 60) return '~' + min + ' Min';
-  var h = Math.floor(min / 60);
-  var m = min % 60;
-  return m === 0 ? '~' + h + ' Std' : '~' + h + ' Std ' + m + ' Min';
+// Count recorded checks. Do not convert that count into minutes: the
+// announced 5-minute cadence is not the cadence the scheduler keeps,
+// so a duration computed from it would be an invented number.
+function checkPhrase(n, adjective) {
+  return n + ' ' + adjective + ' ' + (n === 1 ? 'Prüfung' : 'Prüfungen');
 }
 
-// Hover text for one day's bar — includes how long the day was disrupted.
 function cellTooltip(key, bucket) {
   var d = formatDate(key);
   if (!bucket || bucket.total === 0) return d + ' — keine Daten';
-  var real = bucket.up + bucket.degraded + bucket.down;
+  var real = (bucket.up || 0) + (bucket.degraded || 0) + (bucket.down || 0);
   if (real === 0) return d + ' — Wartung';
   var parts = [];
-  if (bucket.down > 0) parts.push(formatDuration(bucket.down) + ' Ausfall');
-  if (bucket.degraded > 0) {
-    parts.push(formatDuration(bucket.degraded) + ' eingeschränkt');
-  }
+  if (bucket.down > 0) parts.push(checkPhrase(bucket.down, 'fehlgeschlagene'));
+  if (bucket.degraded > 0) parts.push(checkPhrase(bucket.degraded, 'eingeschränkte'));
   if (parts.length === 0) return d + ' — keine Störung';
   return d + ' — ' + parts.join(', ');
 }
@@ -85,7 +78,7 @@ function bucketColor(bucket) {
 // Fixed-length array of { key, bucket } for one component, oldest first.
 function dayCells(uptime, comp, days) {
   var byDate = {};
-  var list = (uptime && uptime.days) || [];
+  var list = (uptime && Array.isArray(uptime.days) && uptime.days) || [];
   for (var i = 0; i < list.length; i++) {
     byDate[list[i].date] = list[i][comp] || null;
   }
@@ -98,19 +91,6 @@ function dayCells(uptime, comp, days) {
     out.push({ key: key, bucket: byDate[key] || null });
   }
   return out;
-}
-
-// Uptime % excludes maintenance checks from the denominator, so a
-// planned nightly window does not drag the figure down.
-function uptimePct(cells) {
-  var up = 0;
-  var real = 0;
-  for (var i = 0; i < cells.length; i++) {
-    var b = cells[i].bucket;
-    if (b) { up += b.up; real += b.up + b.degraded + b.down; }
-  }
-  if (real === 0) return null;
-  return (up / real) * 100;
 }
 
 function el(tag, className, text) {
@@ -148,6 +128,15 @@ function statusIcon(kind) {
     return svg;
   }
 
+  if (kind === 'unknown') {
+    var ring = document.createElementNS(SVG_NS, 'circle');
+    ring.setAttribute('cx', '12');
+    ring.setAttribute('cy', '12');
+    ring.setAttribute('r', '7');
+    svg.appendChild(stroke(ring));
+    return svg;
+  }
+
   var d = kind === 'operational' ? 'M5 12.5l4.2 4.2L19 7'
     : kind === 'down' ? 'M7 7l10 10M17 7L7 17'
     : 'M12 6.5v7.5M12 17.4v.1';
@@ -157,77 +146,51 @@ function statusIcon(kind) {
   return svg;
 }
 
-function renderBanner(status, animate) {
+function renderBanner(view, animate) {
   var host = document.getElementById('banner');
   host.replaceChildren();
-  host.dataset.status = status.overall;
+  host.dataset.status = view.banner;
   host.classList.toggle('banner--in', animate);
 
-  var titles = {
-    operational: 'Alle Systeme betriebsbereit',
-    degraded: 'Eingeschränkter Betrieb',
-    down: 'Störung',
-    maintenance: 'Geplante Wartung',
-  };
-
   var icon = el('span', 'banner-icon');
-  icon.appendChild(statusIcon(status.overall));
-
-  var sub;
-  if (status.overall === 'down') {
-    sub = 'Wir haben das Problem erkannt und arbeiten an einer Lösung.';
-  } else if (status.overall === 'maintenance' && status.note) {
-    sub = status.note;
-  } else {
-    sub = 'Aktualisiert ' + relativeTime(status.checked_at);
-  }
+  icon.appendChild(statusIcon(view.banner));
 
   var text = el('div');
   text.append(
-    el('div', 'banner-title', titles[status.overall] || 'Status unbekannt'),
-    el('div', 'banner-sub', sub),
+    el('div', 'banner-title', view.title),
+    el('div', 'banner-sub', view.subtitle),
   );
   host.append(icon, text);
 }
 
-function renderStale(status) {
-  var host = document.getElementById('stale');
-  var ageMin = (Date.now() - new Date(status.checked_at).getTime()) / 60000;
-  if (ageMin > STALE_MINUTES) {
-    host.textContent = 'Hinweis: Die Statusdaten sind möglicherweise '
-      + 'veraltet (letzte Prüfung ' + relativeTime(status.checked_at) + ').';
-    host.hidden = false;
-  } else {
-    host.hidden = true;
-  }
-}
-
-function renderComponents(status, uptime, animate) {
+function renderComponents(view, uptime, animate) {
   var host = document.getElementById('components');
   host.replaceChildren();
 
-  for (var i = 0; i < ORDER.length; i++) {
-    var key = ORDER[i];
-    var cur = (status.components && status.components[key]) || { status: 'down' };
+  for (var i = 0; i < COMPONENTS.length; i++) {
+    var key = COMPONENTS[i];
+    var cur = (view.components && view.components[key]) || { status: 'unknown' };
     var cells = dayCells(uptime, key, HISTORY_DAYS);
-    var pct = uptimePct(cells);
-    var pctText = pct === null
-      ? '– Uptime'
-      : pct.toFixed(2).replace('.', ',') + ' % Uptime';
+    var summary = measurementSummary(cells.map(function (cell) { return cell.bucket; }));
+    var pctText = summary.label;
+    var pctShown = pctText || 'keine Messung';
+    var stateLabel = STATUS_DE[cur.status] || STATUS_DE.unknown;
 
     var row = el('div', animate ? 'row row--in' : 'row');
     row.style.setProperty('--i', i);
     row.setAttribute('role', 'listitem');
     row.setAttribute('aria-label',
-      LABELS[key] + ': ' + STATUS_DE[cur.status] + ', ' + pctText);
+      LABELS[key] + ': ' + stateLabel + ', ' + (pctText || 'keine Messung'));
 
     var top = el('div', 'row-top');
     var name = el('span', 'row-name');
     var dot = el('span', 'dot');
-    dot.dataset.status = cur.status;
+    dot.dataset.status = cur.status || 'unknown';
     dot.setAttribute('aria-hidden', 'true');
     name.append(dot, el('span', null, LABELS[key]));
-    top.append(name, el('span', 'row-pct', pctText));
+    var pctEl = el('span', 'row-pct', pctShown);
+    if (!summary.available) pctEl.dataset.unavailable = 'true';
+    top.append(name, pctEl);
 
     var bar = el('div', 'bar');
     bar.setAttribute('aria-hidden', 'true');
@@ -247,7 +210,7 @@ function renderComponents(status, uptime, animate) {
 function renderMonitorSince(uptime) {
   var host = document.getElementById('monitor-since');
   if (!host) return;
-  var days = (uptime && uptime.days) || [];
+  var days = (uptime && Array.isArray(uptime.days) && uptime.days) || [];
   if (days.length === 0) {
     host.textContent = 'Überwachung gerade gestartet · Verlauf füllt sich täglich';
     host.hidden = false;
@@ -260,14 +223,15 @@ function renderMonitorSince(uptime) {
   }
 }
 
-function renderIncidents(incidents, status) {
+function renderIncidents(incidents, view) {
   var host = document.getElementById('incidents');
   host.replaceChildren();
 
   var hasManual = incidents && incidents.length > 0;
-  var liveOutage = status && status.overall === 'down';
+  var liveOutage = !!(view && view.showLiveOutage);
 
   // Automatic notice while a real outage is ongoing — no manual edit needed.
+  // Only when the snapshot is fresh enough to call the outage current.
   if (liveOutage) {
     var auto = el('article', 'incident');
     auto.dataset.severity = 'down';
@@ -314,24 +278,37 @@ function renderIncidents(incidents, status) {
   }
 }
 
+function paint(view, uptime, incidents, animate) {
+  renderBanner(view, animate);
+  renderComponents(view, uptime, animate);
+  renderMonitorSince(uptime);
+  renderIncidents(incidents, view);
+}
+
 function load() {
   var animate = firstPaint;
+  var now = new Date();
   Promise.all([
-    getJson('data/status.json'),
+    getJson('data/status.json').then(
+      function (data) { return { value: data }; },
+      function (err) {
+        return { error: err && err.reason === 'missing' ? 'missing' : 'malformed' };
+      },
+    ),
     getJson('data/uptime.json').catch(function () { return { days: [] }; }),
     getJson('data/incidents.json').catch(function () { return []; }),
   ]).then(function (results) {
-    renderBanner(results[0], animate);
-    renderStale(results[0]);
-    renderComponents(results[0], results[1], animate);
-    renderMonitorSince(results[1]);
-    renderIncidents(results[2], results[0]);
+    var uptime = results[1] && Array.isArray(results[1].days) ? results[1] : { days: [] };
+    var incidents = Array.isArray(results[2]) ? results[2] : [];
+    paint(presentFromSource(results[0], now), uptime, incidents, animate);
     firstPaint = false;
   }).catch(function () {
-    var banner = document.getElementById('banner');
-    banner.replaceChildren();
-    banner.dataset.status = 'down';
-    banner.append(el('div', 'banner-title', 'Status derzeit nicht abrufbar'));
+    paint(
+      presentFromSource({ error: 'malformed' }, now),
+      { days: [] },
+      [],
+      false,
+    );
   });
 }
 
