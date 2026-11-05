@@ -4,13 +4,14 @@ Public uptime/status page for duktus PRO, served at
 [status.duktus-pro.de](https://status.duktus-pro.de).
 
 Runs entirely on GitHub Pages + GitHub Actions — independent of the
-duktus AWS infrastructure, so it stays online during an outage.
+duktus production infrastructure (Hetzner), so it stays online during an outage.
 
 ## How it works
 
-- `.github/workflows/check.yml` runs `scripts/check.mjs` every 5 minutes.
+- `.github/workflows/status_check.yml` runs `scripts/check.mjs` on a `*/5` cron.
+  GitHub delays and drops scheduled runs, so the real cadence is lower (see DUK-154).
 - The checker probes the frontend URL and the public
-  `/health/components` backend endpoint, then writes `data/*.json`
+  `/api/status/components` backend endpoint, then writes `data/*.json`
   and commits the result back to this repo.
 - `index.html` + `app.js` render that JSON.
 
