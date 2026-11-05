@@ -31,8 +31,13 @@
       <p class="head-sub">Live-Betriebsstatus aller duktus-Dienste</p>
     </header>
 
-    <section id="banner" class="banner" aria-live="polite"></section>
-    <div id="stale" class="stale" role="status" hidden></div>
+    <!-- Neutral until present.mjs accepts the snapshot. Never default to green. -->
+    <section id="banner" class="banner" data-status="unknown" aria-live="polite">
+      <div>
+        <div class="banner-title">Status unbekannt</div>
+        <div class="banner-sub">Messdaten werden geladen.</div>
+      </div>
+    </section>
 
     <h2 class="section-label">Uptime der letzten 90 Tage</h2>
     <section id="components" class="components" role="list"></section>
@@ -44,6 +49,7 @@
 
     <p class="status-note">
       Diese Seite läuft unabhängig von der duktus-Infrastruktur · automatisch alle 5 Minuten geprüft
+      <!-- Angekündigtes Intervall: 5 Minuten. Darstellungs-Schwelle STALE_AFTER_MIN in scripts/present.mjs (3 × 5 = 15 Minuten). -->
     </p>
   </main>
 
@@ -103,6 +109,6 @@
   </div>
 </footer>
 <!-- /dk:footer -->
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
