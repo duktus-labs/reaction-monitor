@@ -339,3 +339,20 @@ body {
   .banner--in, .row--in, .row--in .bar { animation: none; }
   .bar i { transition: none; }
 }
+
+.status-next {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.status-next a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--fg, inherit);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
