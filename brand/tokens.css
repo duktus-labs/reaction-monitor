@@ -1,155 +1,112 @@
 /* ============================================
-   duktus — Design Tokens (Relaunch 2026-08)
+   duktus — Design Tokens (Marke 2 · Design System 3.0, 2026-11)
    SINGLE SOURCE OF TRUTH for design tokens.
    Edit HERE only, then run `npm run brand:sync`.
-   Synced to: public/styles/tokens.css · tools/public/brand/ ·
-              docs/docs/public/brand/ · ../duktus-status/brand/
+   Synced to: tools/public/brand/ · docs/docs/public/brand/ ·
+              api/brand/ · ../duktus-status/brand/
 
-   Ersetzt die "Matte Ceramic" (Iris/Violet) Palette. Quelle: der
-   Lovable-Relaunch "Duktus Pro Relaunch" (TanStack Start), Vorbild
-   Framer-Referenz "Healthier". Josh-Entscheid 2026-08-05: dieses
-   Blau-System ist jetzt die Zielpalette für alle vier Oberflächen
-   (Marketing, Tools, Docs, Status) statt Iris/Violet.
+   Marke 2 ersetzt das Blau-System vom 2026-08-05 (Entscheid des
+   Inhabers, 2026-11; hebt "Blau bleibt" aus PR #19 auf).
+   Quelle: duktus Design System 3.0 (tokens.json, rev. 4) und App-PR #247
+   (Block html[data-brand='2']).
+
+   Grundsatz: Ink/White/Surface tragen die Flaeche. Ink ist Primaerfarbe
+   (Links, Icons, Badges, Logo). Violett nur fuer Auswahl, Fokus, aktive
+   Navigation und die erste Datenreihe — nie als Flaeche hinter Text.
+   Farben stehen als Hex, so wie das Design System sie definiert;
+   brand/palette.json traegt dieselben Werte fuer die Dialekte.
    ============================================ */
-
-/* ──────────────────────────── FONT FACES ────────────────────────────
-   Alle Familien sind self-hosted als Variable Fonts aus /fonts/.
-   Absolute URLs, damit diese eine Datei auf jeder Oberfläche
-   identisch auflöst. Keine Google-Fonts-Requests zur Laufzeit. */
-@font-face {
-  font-family: 'Rethink Sans';
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url('/fonts/RethinkSans-VariableFont_wght.ttf') format('truetype-variations');
-}
-@font-face {
-  font-family: 'Rethink Sans';
-  font-style: italic;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url('/fonts/RethinkSans-Italic-VariableFont_wght.ttf') format('truetype-variations');
-}
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('/fonts/Inter-VariableFont_opsz_wght.ttf') format('truetype-variations');
-}
-@font-face {
-  font-family: 'Inter';
-  font-style: italic;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('/fonts/Inter-Italic-VariableFont_opsz_wght.ttf') format('truetype-variations');
-}
-/* JetBrains Mono bleibt unverändert für Codes/ICD-Werte/Versionsstände. */
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('/fonts/JetBrainsMono-VariableFont_wght.ttf') format('truetype-variations');
-}
-/* Newsreader/--font-serif bleibt vorerst definiert (wird an mehreren Stellen in
-   tools/ und docs/ referenziert) — im neuen "Healthier"-Look aber nicht mehr
-   aktiv für Emphasis eingesetzt. Abbau erst nach Prüfung aller Konsument:innen. */
-@font-face {
-  font-family: 'Newsreader';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('/fonts/Newsreader-VariableFont_opsz_wght.ttf') format('truetype-variations');
-}
-
 :root {
-  /* ──────────────────────────── COLOR — Raw palette ────────────────────────────
-     Ein-zu-eins aus dem Lovable-Relaunch (src/styles.css, oklch-Werte) übernommen —
-     keine erfundenen Zwischenstufen. Vorbild: Framer "Healthier". */
+  /* ──────────────────────────── COLOR — Raw palette (Marke 2) ──────────────────────────── */
 
-  /* Text-Skala (neutral, leicht blau-stichig) */
-  --ink:       oklch(0.2221 0      89.88);   /* Headlines, höchster Kontrast */
-  --ink-soft:  oklch(0.2931 0.0095 268.35);  /* Hover-Zustand von ink */
-  --body:      oklch(0.4344 0.0106 264.46);  /* Fließtext */
-  --subtle:    oklch(0.5924 0.0131 264.47);  /* sekundärer Text */
-  --faint:     oklch(0.6924 0.0131 264.47);  /* Hinweise, Timestamps */
+  /* Text-Skala */
+  --ink:       #0B0F14;   /* Headlines, Primaerfarbe, Logo — 19,6:1 auf weiss */
+  --ink-soft:  #3A3F4A;   /* ink-2: Hover von ink, kraeftiger Fliesstext */
+  --body:      #3A3F4A;   /* Fliesstext */
+  --subtle:    #5B6170;   /* ink-muted: Sekundaertext, 6,2:1 auf weiss */
+  --faint:     #8B93A1;   /* ink-subtle: nur Platzhalter/deaktiviert, nie Inhalt */
 
-  /* Marke — Akzentblau (Interaktion, Links, Badges, Logo — NICHT der Button-Fill) */
-  --brand:              oklch(0.5696 0.2176 259.85);
-  --brand-strong:       oklch(0.5043 0.1952 260.17);  /* Hover/aktiv, dunkler */
-  --brand-deep:         oklch(0.4257 0.1639 260.27);  /* Text auf Brand-Tint */
-  --brand-tint:         oklch(0.966  0.0154 247.99);  /* helle Flächen, Badges */
-  --brand-tint-strong:  oklch(0.9315 0.0318 246.7);   /* kräftigere helle Fläche */
+  /* Marke — seit Marke 2 Ink, nicht mehr Blau. Die Namen bleiben, weil
+     tools/, docs/ und die Statusseite sie konsumieren. */
+  --brand:              #0B0F14;   /* = ink */
+  --brand-strong:       #3A3F4A;   /* Hover */
+  --brand-deep:         #0B0F14;   /* Text auf Tint */
+  --brand-tint:         #F5F6F8;   /* = surface, Badges */
+  --brand-tint-strong:  #ECEEF1;   /* = surface-sunken */
 
-  /* Flächen */
-  --surface:       oklch(0.978  0.0062 255.47);
-  --surface-soft:  oklch(0.9904 0.0045 258.32);
-  --surface-cool:  oklch(0.9625 0.008  253.85);
-  --hairline:      oklch(0.9439 0.0126 255.51);  /* Standard-Border */
+  /* Violett — NUR Auswahl, Fokus, aktive Navigation, chart-1 */
+  --violet:         #6B5CF6;   /* Fokusring, Auswahlrand (4,7:1 auf weiss) */
+  --violet-strong:  #5B4BE0;   /* Violett als Text (5,95:1 auf weiss) */
+  --violet-tint:    #F0EDFF;   /* ausgewaehlte Zeile, aktive Nav-Flaeche */
+  --violet-dark:    #A99CFF;   /* Akzent im Dunkelmodus */
 
-  /* Onyx — Fast-Schwarz, Farbe der primären Buttons + Footer + dunkle Sektionen */
-  --onyx:       oklch(0.2221 0      89.88);   /* identisch zu --ink im Quellsystem */
-  --onyx-soft:  oklch(0.2931 0.0095 268.35);  /* Button-Hover */
+  /* Marketing-/Diagrammfarben — nie Text, nie Status */
+  --lilac:    #CDBBFF;
+  --coral:    #FF7A6B;
+  --apricot:  #FFC57A;
 
-  /* ──────────────────────────── COLOR — Semantic tokens ────────────────────────────
-     WICHTIG — Rollenwechsel ggü. der alten Iris/Violet-Palette:
-     --primary ist jetzt Onyx (Button-Farbe), NICHT mehr die Markenfarbe.
-     --accent ist jetzt das Akzentblau (Marke/Links/Badges), wie zuvor Violet. */
-  --bg:            oklch(1 0 0);          /* page — reines Weiß */
-  --bg-elev-1:     var(--surface);        /* cards, panels */
-  --bg-elev-2:     oklch(1 0 0);          /* modals, floating surfaces */
-  --bg-subtle:     var(--surface-cool);   /* muted fills */
-  --bg-inverse:    var(--onyx);           /* Footer, dunkle Sektionen */
+  /* Flaechen */
+  --surface:       #F5F6F8;
+  --surface-soft:  #FAFAFB;
+  --surface-cool:  #ECEEF1;   /* surface-sunken */
+  --hairline:      #E5E7EB;   /* border: dekorativ, nie einziger Steuerelement-Rand */
+  --paper-warm:    #F6F3EC;   /* Seitengrund der Website (DS 3.0 rev. 4) */
+  --paper-line:    #E4DFD3;
 
-  --fg:            var(--ink);            /* primary text */
-  --fg-1:          var(--body);           /* body */
-  --fg-2:          var(--subtle);         /* secondary */
-  --fg-muted:      var(--faint);          /* hints, timestamps */
-  --fg-on-primary: oklch(1 0 0);
-  --fg-on-dark:    oklch(1 0 0);            /* höchste Emphase auf dunklem Grund (Footer, dunkle Sektionen) */
-  --fg-on-dark-1:  oklch(1 0 0 / 0.85);      /* Überschriften/Links auf dunklem Grund */
-  --fg-on-dark-2:  oklch(1 0 0 / 0.7);       /* Fließtext auf dunklem Grund */
-  --fg-on-dark-muted: oklch(1 0 0 / 0.5);    /* Hinweise auf dunklem Grund */
-  --border-on-dark:   oklch(1 0 0 / 0.12);   /* Trennlinien auf dunklem Grund */
+  /* Onyx — primaere Buttons, Footer, dunkle Sektionen (= ink) */
+  --onyx:       #0B0F14;
+  --onyx-soft:  #3A3F4A;
 
-  --primary:       var(--onyx);           /* Button-/CTA-Farbe */
+  /* ──────────────────────────── COLOR — Semantic tokens ──────────────────────────── */
+  --bg:            #FFFFFF;
+  --bg-elev-1:     var(--surface);
+  --bg-elev-2:     #FFFFFF;
+  --bg-subtle:     var(--surface-cool);
+  --bg-inverse:    var(--onyx);
+
+  --fg:            var(--ink);
+  --fg-1:          var(--body);
+  --fg-2:          var(--subtle);
+  --fg-muted:      var(--subtle);     /* Hinweise brauchen 4,5:1 — faint reicht nicht */
+  --fg-on-primary: #FFFFFF;
+  --fg-on-dark:    #FFFFFF;
+  --fg-on-dark-1:  rgb(255 255 255 / 0.85);
+  --fg-on-dark-2:  rgb(255 255 255 / 0.7);
+  --fg-on-dark-muted: rgb(255 255 255 / 0.6);
+  --border-on-dark:   rgb(255 255 255 / 0.12);
+
+  --primary:       var(--onyx);
   --primary-hover: var(--onyx-soft);
   --primary-soft:  var(--surface-cool);
 
-  --accent:        var(--brand);          /* Marken-/Interaktionsfarbe */
-  --accent-hover:  var(--brand-strong);
-  --accent-soft:   var(--brand-tint);
+  --accent:        var(--violet-strong);   /* Auswahl/aktive Navigation als Text */
+  --accent-hover:  var(--violet);
+  --accent-soft:   var(--violet-tint);
 
   --border:        var(--hairline);
-  --border-soft:   oklch(0 0 0 / 0.06);
-  --border-strong: oklch(0.86 0.014 255 / 1);
-  --ring:          oklch(0.5696 0.2176 259.85 / 0.35);  /* Brand-Fokusring */
+  --border-soft:   rgb(11 15 20 / 0.06);
+  --border-strong: #8B93A1;               /* Eingabefelder, 3:1 */
+  --ring:          var(--violet);         /* 2px Fokusring, 2px Abstand */
 
   /* ──────────────────────────── PRODUKT-UI (duktus PRO App) ────────────────
-     Diese Tokens gelten fuer die Anwendung, nicht fuer die Marketing-Flaeche.
-     Sie waren bisher NUR in src/styles.css definiert — die App konnte sie
-     also gar nicht ueber brand:sync beziehen, obwohl die /designsystem-Seite
-     sie als "Designsprache fuer Website und App" fuehrt.
-
      Statusfarben tragen in einer klinischen Dokumentation Bedeutung. Sie
-     duerfen nie allein durch Farbe kommunizieren — immer Farbe UND Wort
-     (Regel auf /designsystem). */
-  --success:      oklch(0.5842 0.1225 158.1);
-  --success-tint: oklch(0.9557 0.0324 158.1);
-  --warning:      oklch(0.6842 0.1441 68.5);
-  --warning-tint: oklch(0.9612 0.0439 78.5);
-  --danger:       oklch(0.577 0.245 27.325);
-  --danger-tint:  oklch(0.9524 0.0296 24.6);
-  --info:         oklch(0.5696 0.2176 259.85);
-  --info-tint:    oklch(0.9315 0.0318 246.7);
+     duerfen nie allein durch Farbe kommunizieren — immer Farbe UND Wort. */
+  --success:      #047857;
+  --success-tint: #ECFDF5;
+  --warning:      #B45309;
+  --warning-tint: #FFFBEB;
+  --danger:       #B91C1C;
+  --danger-tint:  #FEF2F2;
+  --info:         #0B0F14;   /* Info ist ink */
+  --info-tint:    #F5F6F8;
 
-  /* Flaechen der Anwendung: Arbeitsflaeche, Panel, Seitenleiste. */
-  --app-canvas: oklch(0.9825 0.0045 258.32);
-  --app-panel:  oklch(1 0 0);
-  --app-rail:   oklch(0.9625 0.008 253.85);
+  --app-canvas: #F5F6F8;
+  --app-panel:  #FFFFFF;
+  --app-rail:   #F5F6F8;
 
   /* ──────────────────────────── TYPE — Families ──────────────────────────── */
+  /* Marke 2 (DS 3.0 rev. 2/4): Rethink Sans 700 nur fuer Website-Titel ab 24px,
+     sonst Inter. Die App (PR #247) ist Inter-only; die Wortmarke ist Inter 700. */
   --font-display: 'Rethink Sans', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-serif:   'Newsreader', "Iowan Old Style", "Source Serif Pro", Palatino, Georgia, serif;
@@ -201,44 +158,47 @@
   --space-24:  96px;
 
   /* ──────────────────────────── RADIUS ──────────────────────────── */
-  /* Größere Radien als zuvor — Teil des "Healthier"-Looks (Pill-Nav, XXL-Karten). */
+  /* Radien nach DS 3.0: 4 Badge, 6 Input, 8 Button, 12 App-Card, 20 Website-Card. */
+  --radius-xs:    4px;
   --radius-sm:    6px;
-  --radius-md:    10px;
+  --radius-md:    8px;
   --radius-lg:    12px;
-  --radius-xl:    16px;
+  --radius-xl:    20px;
   --radius-2xl:   22px;
-  --radius-card:      24px;   /* Standardkarten, neu */
-  --radius-card-lg:   32px;   /* große Sektionen/Hero-Karten, neu */
+  --radius-card:      20px;   /* DS 3.0 radius-xl: Website-Cards */
+  --radius-card-lg:   24px;   /* grosse Sektionen */
   --radius-full:  9999px;
   --radius-pill:  999px;      /* Alias, für 1:1-Portierung aus dem Lovable-Code */
 
   /* ──────────────────────────── SHADOW ──────────────────────────── */
-  /* Alte aura-shadow-Namen bleiben erhalten (Kompatibilität mit bestehenden
-     Konsument:innen), Werte jetzt blau-stichig statt ink-stichig.
-     Neue shadow-*-Namen entsprechen 1:1 dem Lovable-Quellcode. */
-  --aura-shadow:        0 14px 40px -22px oklch(0.22 0.02 262 / 0.24);
-  --aura-shadow-hover:  0 28px 60px -32px oklch(0.22 0.02 262 / 0.34);
-  --aura-shadow-inset:  inset 0 1px 0 0 oklch(1 0 0 / 0.55);
-  --aura-shadow-sm:     0 1px 2px 0 oklch(0.22 0.02 262 / 0.06), 0 1px 1px 0 oklch(0.22 0.02 262 / 0.04);
-  --aura-focus-ring:    0 0 0 2px var(--brand-tint-strong);
+  /* Tiefe kommt ueber die Haarlinie, nicht ueber Schatten (DS 3.0).
+     Alte Namen bleiben fuer bestehende Konsument:innen. */
+  --aura-shadow:        0 4px 16px -4px rgb(11 15 20 / 0.10);
+  --aura-shadow-hover:  0 24px 48px -24px rgb(11 15 20 / 0.22);
+  --aura-shadow-inset:  inset 0 1px 0 0 rgb(255 255 255 / 0.55);
+  --aura-shadow-sm:     0 1px 2px rgb(11 15 20 / 0.06);
+  --aura-focus-ring:    0 0 0 2px var(--bg), 0 0 0 4px var(--violet);
 
-  --shadow-nav:    0 14px 40px -18px oklch(0.22 0.02 262 / 0.28);
-  --shadow-card:   0 14px 40px -22px oklch(0.22 0.02 262 / 0.24);
-  --shadow-lift:   0 28px 60px -32px oklch(0.22 0.02 262 / 0.34);
-  --shadow-hero:   0 50px 110px -50px oklch(0.22 0.02 262 / 0.45);
-  --shadow-brand:  0 20px 44px -22px oklch(0.5696 0.2176 259.85 / 0.5);
+  --shadow-sm:     0 1px 2px rgb(11 15 20 / 0.06);
+  --shadow-md:     0 4px 16px -4px rgb(11 15 20 / 0.10);
+  --shadow-lg:     0 24px 48px -24px rgb(11 15 20 / 0.22);
+  --shadow-nav:    0 1px 2px rgb(11 15 20 / 0.06);
+  --shadow-card:   none;
+  --shadow-lift:   0 4px 16px -4px rgb(11 15 20 / 0.10);
+  --shadow-hero:   0 24px 48px -24px rgb(11 15 20 / 0.22);
+  --shadow-brand:  0 4px 16px -4px rgb(11 15 20 / 0.10);
 
-  /* ──────────────────────────── MOTION — Aura-Snap ────────────────────────────
-     Curves nach Emil Kowalski: built-in CSS easings sind zu schwach.
-     --ease-snap   = strong ease-out (entering/exiting UI)
-     --ease-smooth = strong ease-in-out (on-screen movement)
-     --ease-drawer = iOS-like (modals, drawers) */
+  /* ──────────────────────────── MOTION ────────────────────────────
+     Bewegung erklaert einen Zustand, sie schmueckt nicht. Werte aus
+     motion-tokens.json der App: 120 Feedback, 180 Popover, 240 Panel,
+     280 Layout. Kein Bounce. Bei prefers-reduced-motion statisch
+     (siehe brand.css). */
   --ease-snap:   cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-smooth: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-smooth: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-press:   120ms;
-  --dur-fast:    150ms;
+  --dur-fast:    180ms;
   --dur-base:    240ms;
-  --dur-slow:    360ms;
-  --stagger:     70ms;
+  --dur-slow:    280ms;
+  --stagger:     55ms;
 }

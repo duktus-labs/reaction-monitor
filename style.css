@@ -1,19 +1,21 @@
 /* duktus PRO — Status-Seite
-   Farbsystem: OKLCH. Neutrale sind zur Markenfarbe (~303) getönt,
-   kein reines Schwarz/Weiß. */
+   Farbsystem: Marke 2 (Design System 3.0, 2026-11). Ink/Weiss/Surface,
+   Violett nur fuer Fokus. Statusfarben bleiben funktional (OKLCH) und
+   stehen nie allein: immer mit Wort und Symbol. */
 
 :root {
   color-scheme: light dark;
 
-  /* Brand + Neutrale aus dem geteilten Matte-Ceramic-System (brand/tokens.css) */
-  --brand: var(--iris-500);
+  /* Brand + Neutrale aus Marke 2 (brand/tokens.css des Webseiten-Repos) */
+  --brand: #0B0F14;            /* ink */
 
-  --bg:     var(--ceramic-50);
-  --card:   #ffffff;
-  --border: var(--ceramic-300);
-  --line:   var(--ceramic-200);
-  --text:   var(--ceramic-800);
-  --muted:  var(--ceramic-500);
+  --bg:     #F5F6F8;           /* surface */
+  --card:   #FFFFFF;
+  --border: #E5E7EB;           /* hairline */
+  --line:   #ECEEF1;           /* surface-sunken */
+  --text:   #0B0F14;           /* ink */
+  --muted:  #5B6170;           /* ink-muted, 5,7:1 auf surface */
+  --focus:  #6B5CF6;           /* Violett: nur Fokus */
 
   /* Status — funktionale Farben */
   --op:         oklch(0.585 0.135 152);
@@ -28,25 +30,26 @@
   --down-border: oklch(0.892 0.055 27);
   --none: oklch(0.886 0.006 303);
 
-  --maint:        oklch(0.595 0.105 248);
-  --maint-bg:     oklch(0.966 0.022 248);
-  --maint-border: oklch(0.892 0.044 248);
+  --maint:        #5B6170;     /* Wartung neutral (Info ist ink) */
+  --maint-bg:     #F5F6F8;
+  --maint-border: #E5E7EB;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ── Dark Mode — dunkles Lila/Plum (matcht den Docs-Dark-Mode), auto via OS-Präferenz.
+/* ── Dark Mode — Marke 2 dunkel (Ink und Weiss gedreht), auto via OS-Präferenz.
    Neutrale + Brand werden umgemappt; funktionale Status-Farben bekommen dunkle Tints;
    die geteilte dk-TopBar/Footer werden lokal auf dunkel umgeskinnt (nur Status). */
 @media (prefers-color-scheme: dark) {
   :root {
-    --brand: #ACA0E4;            /* iris-300 — accent kept */
-    --bg:     #15171A;           /* anthracite — page */
-    --card:   #1F2228;           /* anthracite-elevated */
-    --border: #2C3036;
-    --line:   #2A2E33;
-    --text:   #F4F6F8;
-    --muted:  #939AA1;
+    --brand: #F3F4F6;            /* ink (dunkel) */
+    --bg:     #0B0F14;           /* white (dunkel) */
+    --card:   #181E27;           /* surface-raised */
+    --focus:  #A99CFF;
+    --border: #262D38;
+    --line:   #262D38;
+    --text:   #F3F4F6;
+    --muted:  #A2A9B4;
 
     --op:         oklch(0.700 0.140 152);
     --op-bg:      oklch(0.273 0.040 152);
@@ -59,25 +62,25 @@
     --down-bg:     oklch(0.296 0.052 27);
     --down-border: oklch(0.396 0.078 27);
     --none: oklch(0.430 0.006 250);
-    --maint:        oklch(0.720 0.115 248);
-    --maint-bg:     oklch(0.285 0.045 248);
-    --maint-border: oklch(0.385 0.063 248);
+    --maint:        #A2A9B4;
+    --maint-bg:     #181E27;
+    --maint-border: #262D38;
   }
 
   /* shared brand bar + footer — dark variants, scoped to the status page */
-  .dk-topbar { background: color-mix(in srgb, #15171A 84%, #000 16%); border-bottom-color: rgba(255,255,255,0.08); }
-  .dk-wordmark, .dk-wordmark__name { color: #F4F6F8; }
-  .dk-logomark { color: #ACA0E4; }
-  .dk-wordmark__suffix { color: #939AA1; }
-  .dk-wordmark__suffix::before { color: #4A4F57; }
-  .dk-footer { background: #0F1114; border-top-color: rgba(255,255,255,0.08); color: #C7CBD0; }
-  .dk-footer__heading, .dk-footer__link, .dk-footer a { color: #C7CBD0; }
-  .dk-footer__link:hover { color: #ACA0E4; }
-  .dk-footer__intro, .dk-footer__legal, .dk-footer__meta { color: #8B9298; }
-  .dk-footer__legal strong { color: #C7CBD0; }
-  .dk-footer__legal a, .dk-footer__meta a { color: #ACA0E4; }
-  .dk-tag { background: rgba(104,90,230,0.22); color: #C7CBD0; }
-  .dk-tag--neutral { background: rgba(255,255,255,0.08); color: #C7CBD0; }
+  .dk-topbar__inner { background: #12171E; border-color: #262D38; }
+  .dk-wordmark, .dk-wordmark__name { color: #F3F4F6; }
+  .dk-logomark { color: #F3F4F6; }
+  .dk-wordmark__suffix { color: #A2A9B4; }
+  .dk-wordmark__suffix::before { color: #6E7682; }
+  .dk-footer { background: #12171E; border-top-color: rgba(255,255,255,0.08); color: #C7CCD4; }
+  .dk-footer__heading, .dk-footer__link, .dk-footer a { color: #C7CCD4; }
+  .dk-footer__link:hover { color: #F3F4F6; }
+  .dk-footer__intro, .dk-footer__legal, .dk-footer__meta { color: #A2A9B4; }
+  .dk-footer__legal strong { color: #C7CCD4; }
+  .dk-footer__legal a, .dk-footer__meta a { color: #F3F4F6; }
+  .dk-tag { background: rgba(255,255,255,0.1); color: #C7CCD4; }
+  .dk-tag--neutral { background: rgba(255,255,255,0.08); color: #C7CCD4; }
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -85,7 +88,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font: 14px/1.55 var(--font-display, 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  font: 14px/1.55 var(--font-sans, 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   padding: 0 16px 0;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -356,3 +359,6 @@ body {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+/* Marke 2: Fokus nur bei :focus-visible, 2px Violett mit 2px Abstand. */
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
