@@ -85,7 +85,7 @@
 
   --border:        var(--hairline);
   --border-soft:   rgb(11 15 20 / 0.06);
-  --border-strong: #8B93A1;               /* Eingabefelder, 3:1 */
+  --border-strong: #7E8695;               /* Eingabefelder, >=3:1 auch auf surface/paper-warm */
   --ring:          var(--violet);         /* 2px Fokusring, 2px Abstand */
 
   /* ──────────────────────────── PRODUKT-UI (duktus PRO App) ────────────────
