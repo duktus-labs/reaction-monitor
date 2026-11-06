@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://status.duktus-pro.de/">
   <meta name="description" content="Betriebsstatus von duktus PRO">
   <meta name="theme-color" content="#F7F8FB">
-  <!-- Shared Matte Ceramic design system (single source of truth: ../duktus_WEB/brand, synced to /brand) -->
+  <!-- Shared design system (single source of truth: jqttk/website brand/, synced to /brand) -->
   <link rel="stylesheet" href="/brand/tokens.css">
   <link rel="stylesheet" href="/brand/brand.css">
   <link rel="stylesheet" href="style.css">
@@ -27,9 +27,9 @@
 
   <main class="page">
     <header class="head">
-      <span class="head-eyebrow">Echtzeit-Überwachung</span>
+      <span class="head-eyebrow">Betriebsstatus</span>
       <h1 class="head-title">System-Status</h1>
-      <p class="head-sub">Live-Betriebsstatus aller duktus-Dienste</p>
+      <p class="head-sub">Live-Stand der duktus-Dienste. Gesamtstatus und Komponenten zeigen nur den zuletzt gemessenen Stand.</p>
     </header>
 
     <section id="banner" class="banner" aria-live="polite"></section>
@@ -44,8 +44,13 @@
     <section id="incidents" class="incidents"></section>
 
     <p class="status-note">
-      Diese Seite läuft unabhängig von der duktus-Infrastruktur · automatisch alle 5 Minuten geprüft
+      Diese Seite läuft unabhängig von der duktus-Infrastruktur. Prüfungen laufen mehrmals täglich;
+      den Zeitpunkt der letzten Prüfung zeigt die Statuszeile oben.
     </p>
+    <nav class="status-next" aria-label="Weiter">
+      <a href="https://duktus-pro.de/">Zur Website</a>
+      <a href="https://duktus-pro.de/kontakt">Bei Fragen kontaktieren</a>
+    </nav>
   </main>
 
   <!-- dk:footer -->
@@ -59,8 +64,9 @@
         </a>
         <p class="dk-footer__intro">Kostenfreier Forschungspilot für KI-gestützte psychotherapeutische Dokumentation.<br>Entwickelt in Berlin, Datenhaltung in Deutschland.</p>
         <div class="dk-footer__tags">
-          <span class="dk-tag dk-tag--neutral">Made in Berlin</span>
-          <span class="dk-tag">Server in Frankfurt</span>
+          <a class="dk-tag dk-tag--neutral" href="https://docs.duktus-pro.de/">Handbuch</a>
+          <a class="dk-tag dk-tag--neutral" href="https://tools.duktus-pro.de/">Toolbox</a>
+          <a class="dk-tag dk-tag--neutral" href="https://status.duktus-pro.de/">Status</a>
         </div>
       </div>
       <div>
@@ -98,7 +104,7 @@
       </p>
       <div class="dk-footer__meta">
         <span>© 2026 duktus · Joshua B. Quattek (Einzelunternehmen) · Kostenfreier Forschungspilot</span>
-        <span>AWS Frankfurt · ISO 27001 (AWS-seitig)</span>
+        <span>Hetzner, Deutschland · KI über AWS Bedrock in der EU</span>
       </div>
     </div>
   </div>

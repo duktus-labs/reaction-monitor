@@ -74,7 +74,9 @@ async function main() {
   for (const k of ['chat', 'doku', 'voice', 'b2b']) {
     let s = backend[k];
     if (beSlow && s === 'operational') s = 'degraded';
-    components[k] = { status: s, latency_ms: be.latency };
+    // Keine latency_ms je Komponente: chat/doku/voice/b2b teilen sich EINE
+    // Backend-Messung. Vier identische Werte wuerden Einzelmessungen vortaeuschen.
+    components[k] = { status: s };
   }
 
   // During a planned maintenance window, down/degraded -> maintenance.
@@ -85,6 +87,8 @@ async function main() {
   if (maint && cfg.maintenance && cfg.maintenance.label) {
     status.note = cfg.maintenance.label;
   }
+  // Eine gemeinsame Messung fuer alle Backend-Komponenten, einmal ausgewiesen.
+  status.backend_latency_ms = be.latency;
   await writeJson('data/status.json', status);
 
   // --- Update rolling history ---
