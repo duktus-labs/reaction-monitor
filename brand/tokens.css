@@ -76,7 +76,7 @@
   --ink-soft:  #3A3F4A;   /* ink-2 */
   --body:      #3A3F4A;   /* Fließtext (ink-2) */
   --subtle:    #5B6170;   /* sekundärer Text (ink-muted) */
-  --faint:     #8B93A1;   /* Hinweise, Timestamps (ink-subtle) */
+  --faint:     #7E8695;   /* Hinweise, Timestamps (ink-subtle) */
 
   /* Marke — Violett (Hauptaktion, Prüfpfad, Links, Bildmarke) */
   --brand:              #6B5CF6;
@@ -135,7 +135,7 @@
 
   --border:        var(--hairline);
   --border-soft:   rgb(11 15 20 / 0.06);
-  --border-strong: #8B93A1;
+  --border-strong: #7E8695;
   --ring:          rgb(107 92 246 / 0.4);  /* Fokusring Violett */
 
   /* ──────────────────────────── PRODUKT-UI (duktus PRO App) ────────────────

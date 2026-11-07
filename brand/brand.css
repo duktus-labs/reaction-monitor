@@ -15,9 +15,9 @@
    Auf .dk begrenzt, damit sie nicht mit den Tailwind-Theme-Variablen in src/styles.css kollidieren. */
 
 .dk{
-  --ink:#0b0f14; --ink-muted:#5b6170; --ink-subtle:#8b93a1;
+  --ink:#0b0f14; --ink-muted:#5b6170; --ink-subtle:#7e8695;
   --white:#ffffff; --surface:#f5f6f8; --surface-raised:#ffffff; --surface-sunken:#eceef1;
-  --border:#e5e7eb; --border-strong:#8b93a1; --on-ink:#ffffff;
+  --border:#e5e7eb; --border-strong:#7e8695; --on-ink:#ffffff;
   --accent:#6b5cf6; --accent-strong:#5b4be0; --accent-tint:#f0edff; --on-accent:#ffffff;
   --lilac:#cdbbff; --coral:#ff7a6b; --apricot:#ffc57a;
   --success:#047857; --success-tint:#ecfdf5; --warning:#b45309; --warning-tint:#fffbeb;
