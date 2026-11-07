@@ -2,28 +2,38 @@
 
 // Render order + display labels for the five components.
 var ORDER = ['web', 'chat', 'doku', 'voice', 'b2b'];
+// Bezeichnungen nach Vorlage V3Status.dc.html (Rebrush v3).
 var LABELS = {
-  web: 'Web-App',
-  chat: 'Chat & KI',
-  doku: 'Doku-Modus',
-  voice: 'Voice & Transkription',
-  b2b: 'B2B-API',
+  web: 'Website',
+  chat: 'Chat',
+  doku: 'Dokumentation',
+  voice: 'Sprache',
+  b2b: 'B2B-Schnittstelle',
 };
-var STATUS_DE = {
-  operational: 'betriebsbereit',
-  degraded: 'eingeschränkt',
-  down: 'Störung',
-  maintenance: 'Wartung',
-  none: 'keine Daten',
+// Nur die Web-App wird direkt gemessen; die übrigen Komponenten teilen sich eine
+// Backend-Prüfung. Latenz steht deshalb nur dort, wo sie wirklich gemessen wurde.
+var MEASURED_LATENCY = { web: true };
+// Datenzustand -> Zustand der DS-Komponente ServiceStatus.
+var DS_STATE = {
+  operational: 'betrieb',
+  degraded: 'eingeschraenkt',
+  down: 'stoerung',
+  maintenance: 'wartung',
+  none: 'unbekannt',
+};
+var DS_LABEL = {
+  betrieb: 'In Betrieb', eingeschraenkt: 'Eingeschränkt', stoerung: 'Störung',
+  wartung: 'Wartung', unbekannt: 'Keine Daten',
+};
+var DS_COLOR = {
+  betrieb: 'var(--success)', eingeschraenkt: 'var(--apricot)', stoerung: 'var(--danger)',
+  wartung: 'var(--accent)', unbekannt: 'var(--ink-muted)',
 };
 var REFRESH_MS = 60000;
 var HISTORY_DAYS = 90;
 var STALE_MINUTES = 15;
 var CHECK_INTERVAL_MIN = 5; // checker cadence — one bucket check ≈ 5 minutes
-var SVG_NS = 'http://www.w3.org/2000/svg';
 
-// First paint animates; refreshes (every 60s) do not.
-var firstPaint = true;
 
 function getJson(path) {
   // Cache-bust so an open tab always sees the latest committed data.
@@ -100,19 +110,6 @@ function dayCells(uptime, comp, days) {
   return out;
 }
 
-// Uptime % excludes maintenance checks from the denominator, so a
-// planned nightly window does not drag the figure down.
-function uptimePct(cells) {
-  var up = 0;
-  var real = 0;
-  for (var i = 0; i < cells.length; i++) {
-    var b = cells[i].bucket;
-    if (b) { up += b.up; real += b.up + b.degraded + b.down; }
-  }
-  if (real === 0) return null;
-  return (up / real) * 100;
-}
-
 function el(tag, className, text) {
   var node = document.createElement(tag);
   if (className) node.className = className;
@@ -120,59 +117,80 @@ function el(tag, className, text) {
   return node;
 }
 
-function statusIcon(kind) {
-  var svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('width', '16');
-  svg.setAttribute('height', '16');
-  svg.setAttribute('aria-hidden', 'true');
+// Markup der DS-Komponente ServiceStatus (src/components/v3/ds.js), ohne React.
+function serviceStatus(opts) {
+  var state = opts.state || 'unbekannt';
+  var root = el('div', 'dk-svc');
+  var head = el('div', 'dk-svc-head');
+  var left = el('div');
+  left.append(el('p', 'dk-svc-name', opts.name));
+  var hostLine = [opts.host, opts.latency ? 'Latenz ' + opts.latency : null].filter(Boolean).join(' · ');
+  if (hostLine) left.append(el('p', 'dk-svc-host', hostLine));
+  var st = el('span', 'dk-svc-state');
+  st.style.color = DS_COLOR[state];
+  var shape = el('span', 'dk-svc-shape dk-svc-shape--' + state);
+  shape.setAttribute('aria-hidden', 'true');
+  var label = el('span', null, DS_LABEL[state]);
+  label.style.color = 'var(--ink)';
+  st.append(shape, label);
+  head.append(left, st);
+  root.append(head);
 
-  function stroke(node) {
-    node.setAttribute('fill', 'none');
-    node.setAttribute('stroke', 'currentColor');
-    node.setAttribute('stroke-width', '2.5');
-    node.setAttribute('stroke-linecap', 'round');
-    node.setAttribute('stroke-linejoin', 'round');
-    return node;
+  if (opts.cells && opts.cells.length) {
+    var bars = el('div', 'dk-svc-bars');
+    bars.setAttribute('role', 'img');
+    bars.setAttribute('aria-label', 'Verlauf der letzten 90 Tage');
+    for (var c = 0; c < opts.cells.length; c++) {
+      var day = el('span');
+      day.style.background = DS_COLOR[DS_STATE[bucketColor(opts.cells[c].bucket)]];
+      day.title = cellTooltip(opts.cells[c].key, opts.cells[c].bucket);
+      bars.append(day);
+    }
+    var axis = el('div', 'dk-svc-axis');
+    axis.append(el('span', null, 'vor 90 Tagen'), el('span', null, 'heute'));
+    root.append(bars, axis);
+  } else if (opts.empty) {
+    root.append(el('p', 'dk-svc-empty', opts.empty));
   }
-
-  if (kind === 'maintenance') {
-    var circle = document.createElementNS(SVG_NS, 'circle');
-    circle.setAttribute('cx', '12');
-    circle.setAttribute('cy', '12');
-    circle.setAttribute('r', '8');
-    svg.appendChild(stroke(circle));
-    var hands = document.createElementNS(SVG_NS, 'path');
-    hands.setAttribute('d', 'M12 7.6V12l3 1.8');
-    svg.appendChild(stroke(hands));
-    return svg;
-  }
-
-  var d = kind === 'operational' ? 'M5 12.5l4.2 4.2L19 7'
-    : kind === 'down' ? 'M7 7l10 10M17 7L7 17'
-    : 'M12 6.5v7.5M12 17.4v.1';
-  var path = document.createElementNS(SVG_NS, 'path');
-  path.setAttribute('d', d);
-  svg.appendChild(stroke(path));
-  return svg;
+  return root;
 }
 
-function renderBanner(status, animate) {
+// Markup der DS-Komponente Callout.
+function callout(kind, title, text) {
+  var k = {
+    tip: ['var(--paper-warm)', 'var(--ink)'],
+    gap: ['var(--apricot-tint)', 'var(--apricot)'],
+    limit: ['var(--coral-tint)', 'var(--coral)'],
+  }[kind] || ['var(--paper-warm)', 'var(--ink)'];
+  var box = el('aside', 'dk-callout');
+  box.style.background = k[0];
+  box.style.borderColor = k[1];
+  box.append(el('p', 'dk-callout-label', title));
+  var lines = [].concat(text);
+  for (var i = 0; i < lines.length; i++) box.append(el('p', 'dk-callout-text', lines[i]));
+  return box;
+}
+
+function formatBerlin(iso) {
+  try {
+    return new Intl.DateTimeFormat('de-DE', {
+      timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    }).format(new Date(iso)) + ' Uhr';
+  } catch (e) {
+    return iso;
+  }
+}
+
+function renderBanner(status) {
   var host = document.getElementById('banner');
   host.replaceChildren();
-  host.dataset.status = status.overall;
-  host.classList.toggle('banner--in', animate);
-
   var titles = {
-    operational: 'Alle Systeme betriebsbereit',
+    operational: 'Alle Komponenten betriebsbereit',
     degraded: 'Eingeschränkter Betrieb',
     down: 'Störung',
     maintenance: 'Geplante Wartung',
   };
-
-  var icon = el('span', 'banner-icon');
-  icon.appendChild(statusIcon(status.overall));
-
   var sub;
   if (status.overall === 'down') {
     sub = 'Wir haben das Problem erkannt und arbeiten an einer Lösung.';
@@ -181,157 +199,107 @@ function renderBanner(status, animate) {
   } else {
     sub = 'Aktualisiert ' + relativeTime(status.checked_at);
   }
-
-  var text = el('div');
-  text.append(
-    el('div', 'banner-title', titles[status.overall] || 'Status unbekannt'),
-    el('div', 'banner-sub', sub),
-  );
-  host.append(icon, text);
+  host.append(serviceStatus({
+    name: titles[status.overall] || 'Status unbekannt',
+    state: DS_STATE[status.overall] || 'unbekannt',
+    host: sub,
+  }));
+  document.getElementById('checked').textContent = 'Zuletzt geprüft: '
+    + formatBerlin(status.checked_at) + ' (Europe/Berlin). Prüfungen laufen mehrmals täglich.';
 }
 
 function renderStale(status) {
   var host = document.getElementById('stale');
+  host.replaceChildren();
   var ageMin = (Date.now() - new Date(status.checked_at).getTime()) / 60000;
   if (ageMin > STALE_MINUTES) {
-    host.textContent = 'Hinweis: Die Statusdaten sind möglicherweise '
-      + 'veraltet (letzte Prüfung ' + relativeTime(status.checked_at) + ').';
+    host.append(callout('gap', 'Daten möglicherweise veraltet',
+      'Die letzte Prüfung liegt ' + relativeTime(status.checked_at).replace('vor ', '') + ' zurück.'));
     host.hidden = false;
   } else {
     host.hidden = true;
   }
 }
 
-function renderComponents(status, uptime, animate) {
+function renderComponents(status, uptime) {
   var host = document.getElementById('components');
   host.replaceChildren();
-
   for (var i = 0; i < ORDER.length; i++) {
     var key = ORDER[i];
-    var cur = (status.components && status.components[key]) || { status: 'down' };
+    var cur = (status.components && status.components[key]) || { status: 'none' };
     var cells = dayCells(uptime, key, HISTORY_DAYS);
-    var pct = uptimePct(cells);
-    var pctText = pct === null
-      ? '– Uptime'
-      : pct.toFixed(2).replace('.', ',') + ' % Uptime';
-
-    var row = el('div', animate ? 'row row--in' : 'row');
-    row.style.setProperty('--i', i);
-    row.setAttribute('role', 'listitem');
-    row.setAttribute('aria-label',
-      LABELS[key] + ': ' + STATUS_DE[cur.status] + ', ' + pctText);
-
-    var top = el('div', 'row-top');
-    var name = el('span', 'row-name');
-    var dot = el('span', 'dot');
-    dot.dataset.status = cur.status;
-    dot.setAttribute('aria-hidden', 'true');
-    name.append(dot, el('span', null, LABELS[key]));
-    top.append(name, el('span', 'row-pct', pctText));
-
-    var bar = el('div', 'bar');
-    bar.setAttribute('aria-hidden', 'true');
-    for (var c = 0; c < cells.length; c++) {
-      var cell = el('i');
-      cell.dataset.status = bucketColor(cells[c].bucket);
-      cell.title = cellTooltip(cells[c].key, cells[c].bucket);
-      bar.append(cell);
-    }
-
-    row.append(top, bar);
-    host.append(row);
+    var hasData = cells.some(function (c) { return c.bucket && c.bucket.total > 0; });
+    host.append(serviceStatus({
+      name: LABELS[key],
+      host: key,
+      latency: MEASURED_LATENCY[key] && cur.latency_ms != null ? cur.latency_ms + ' ms' : '',
+      state: DS_STATE[cur.status] || 'unbekannt',
+      cells: hasData ? cells : [],
+      empty: 'Für die letzten 90 Tage liegen keine Messdaten vor.',
+    }));
   }
 }
 
-// Honest caption while the 90-day history is still filling up.
+// Ehrlicher Hinweis, solange sich der 90-Tage-Verlauf noch füllt.
 function renderMonitorSince(uptime) {
-  var host = document.getElementById('monitor-since');
-  if (!host) return;
+  var host = document.getElementById('data-note');
   var days = (uptime && uptime.days) || [];
+  var base = 'Latenz steht nur dort, wo sie direkt gemessen wurde.';
   if (days.length === 0) {
-    host.textContent = 'Überwachung gerade gestartet · Verlauf füllt sich täglich';
-    host.hidden = false;
+    host.textContent = 'Überwachung gerade gestartet, der Verlauf füllt sich täglich. ' + base;
   } else if (days.length < HISTORY_DAYS) {
     host.textContent = 'Überwachung seit ' + formatDate(days[0].date)
-      + ' · Verlauf füllt sich täglich';
-    host.hidden = false;
+      + ', der Verlauf füllt sich täglich. ' + base;
   } else {
-    host.hidden = true; // history is full — caption no longer needed
+    host.textContent = base;
   }
 }
 
 function renderIncidents(incidents, status) {
   var host = document.getElementById('incidents');
   host.replaceChildren();
-
   var hasManual = incidents && incidents.length > 0;
   var liveOutage = status && status.overall === 'down';
 
-  // Automatic notice while a real outage is ongoing — no manual edit needed.
-  if (liveOutage) {
-    var auto = el('article', 'incident');
-    auto.dataset.severity = 'down';
-    var ahead = el('div', 'incident-head');
-    ahead.append(
-      el('span', 'incident-title', 'Aktuelle Störung'),
-      el('span', 'incident-date', 'Aktiv'),
-    );
-    var aline = el('div', 'incident-update');
-    aline.append(el('span', null,
-      'Wir haben eine Störung festgestellt und arbeiten an einer Lösung.'));
-    auto.append(ahead, aline);
-    host.append(auto);
+  if (status && status.overall === 'maintenance') {
+    host.append(callout('tip', 'Geplante Wartung', status.note || 'Eine Wartung läuft gerade.'));
   }
-
+  if (liveOutage) {
+    host.append(callout('limit', 'Aktuelle Störung',
+      'Wir haben eine Störung festgestellt und arbeiten an einer Lösung.'));
+  }
   if (hasManual) {
     for (var i = 0; i < incidents.length; i++) {
       var inc = incidents[i];
-      var card = el('article', 'incident');
-      card.dataset.severity = inc.severity || 'degraded';
-
-      var head = el('div', 'incident-head');
-      head.append(
-        el('span', 'incident-title', inc.title || 'Störung'),
-        el('span', 'incident-date',
-          (inc.date || '') + (inc.resolved ? ' · behoben' : ' · aktiv')),
-      );
-      card.append(head);
-
-      var updates = inc.updates || [];
-      for (var u = 0; u < updates.length; u++) {
-        var line = el('div', 'incident-update');
-        line.append(
-          el('span', 'incident-time', updates[u].time || ''),
-          el('span', null, updates[u].text || ''),
-        );
-        card.append(line);
-      }
-      host.append(card);
+      var lines = (inc.updates || []).map(function (u) {
+        return (u.time ? u.time + ' · ' : '') + (u.text || '');
+      });
+      var title = (inc.title || 'Störung') + ' · ' + (inc.date || '')
+        + (inc.resolved ? ' · behoben' : ' · aktiv');
+      host.append(callout(inc.resolved ? 'tip' : 'limit', title, lines.length ? lines : ''));
     }
   } else if (!liveOutage) {
-    host.append(el('div', 'incident-empty',
-      'Keine Störungen in den letzten 14 Tagen gemeldet.'));
+    var p = el('p', null, 'Keine dokumentierten Störungen im angezeigten Zeitraum.');
+    p.style.cssText = 'margin: 0; padding: 20px 0; border-top: 1px solid var(--paper-line); font-size: 16px; line-height: 25px; color: var(--ink-2);';
+    host.append(p);
   }
 }
 
 function load() {
-  var animate = firstPaint;
   Promise.all([
     getJson('data/status.json'),
     getJson('data/uptime.json').catch(function () { return { days: [] }; }),
     getJson('data/incidents.json').catch(function () { return []; }),
   ]).then(function (results) {
-    renderBanner(results[0], animate);
+    renderBanner(results[0]);
     renderStale(results[0]);
-    renderComponents(results[0], results[1], animate);
+    renderComponents(results[0], results[1]);
     renderMonitorSince(results[1]);
     renderIncidents(results[2], results[0]);
-    firstPaint = false;
   }).catch(function () {
     var banner = document.getElementById('banner');
     banner.replaceChildren();
-    banner.dataset.status = 'down';
-    banner.append(el('div', 'banner-title', 'Status derzeit nicht abrufbar'));
+    banner.append(serviceStatus({ name: 'Status derzeit nicht abrufbar', state: 'unbekannt' }));
   });
 }
 

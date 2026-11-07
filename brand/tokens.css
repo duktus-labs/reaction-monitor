@@ -65,66 +65,78 @@
 
 :root {
   /* ──────────────────────────── COLOR — Raw palette ────────────────────────────
-     Ein-zu-eins aus dem Lovable-Relaunch (src/styles.css, oklch-Werte) übernommen —
-     keine erfundenen Zwischenstufen. Vorbild: Framer "Healthier". */
+     Rebrush v3 (Josh-Entscheid 07.11.2026): Werte aus dem duktus Design System 3.0
+     (Claude-Design-Artefakt DvRLwhqM2sBpAjYvuJENxL, tokens.json, Hex). Die Namen
+     bleiben, damit tools/docs/status ohne Umbenennung folgen; nur die Werte wechseln.
+     Zuordnung: brand = accent, brand-strong = accent-strong, brand-deep = violet-deep,
+     surface = paper-warm, hairline = paper-line, ink/ink-2/ink-muted/ink-subtle. */
 
-  /* Text-Skala (neutral, leicht blau-stichig) */
-  --ink:       oklch(0.2221 0      89.88);   /* Headlines, höchster Kontrast */
-  --ink-soft:  oklch(0.2931 0.0095 268.35);  /* Hover-Zustand von ink */
-  --body:      oklch(0.4344 0.0106 264.46);  /* Fließtext */
-  --subtle:    oklch(0.5924 0.0131 264.47);  /* sekundärer Text */
-  --faint:     oklch(0.6924 0.0131 264.47);  /* Hinweise, Timestamps */
+  /* Text-Skala */
+  --ink:       #0B0F14;   /* Headlines, höchster Kontrast */
+  --ink-soft:  #3A3F4A;   /* ink-2 */
+  --body:      #3A3F4A;   /* Fließtext (ink-2) */
+  --subtle:    #5B6170;   /* sekundärer Text (ink-muted) */
+  --faint:     #8B93A1;   /* Hinweise, Timestamps (ink-subtle) */
 
-  /* Marke — Akzentblau (Interaktion, Links, Badges, Logo — NICHT der Button-Fill) */
-  --brand:              oklch(0.5696 0.2176 259.85);
-  --brand-strong:       oklch(0.5043 0.1952 260.17);  /* Hover/aktiv, dunkler */
-  --brand-deep:         oklch(0.4257 0.1639 260.27);  /* Text auf Brand-Tint */
-  --brand-tint:         oklch(0.966  0.0154 247.99);  /* helle Flächen, Badges */
-  --brand-tint-strong:  oklch(0.9315 0.0318 246.7);   /* kräftigere helle Fläche */
+  /* Marke — Violett (Hauptaktion, Prüfpfad, Links, Bildmarke) */
+  --brand:              #6B5CF6;
+  --brand-strong:       #5B4BE0;  /* Hover/aktiv, Text auf hellen Flächen */
+  --brand-deep:         #2E2479;  /* violet-deep */
+  --brand-tint:         #F3EFFF;  /* lilac-tint */
+  --brand-tint-strong:  #F0EDFF;  /* accent-tint */
+
+  /* Website-3.0-Flächen und Akzente */
+  --paper-warm:   #F6F3EC;
+  --paper:        #FBFAF7;
+  --paper-line:   #E4DFD3;
+  --lilac:        #CDBBFF;
+  --apricot:      #FFC57A;
+  --apricot-tint: #FFF4E5;
+  --coral:        #FF7A6B;
+  --coral-tint:   #FFF0EC;
 
   /* Flächen */
-  --surface:       oklch(0.978  0.0062 255.47);
-  --surface-soft:  oklch(0.9904 0.0045 258.32);
-  --surface-cool:  oklch(0.9625 0.008  253.85);
-  --hairline:      oklch(0.9439 0.0126 255.51);  /* Standard-Border */
+  --surface:       #F6F3EC;  /* paper-warm */
+  --surface-soft:  #FBFAF7;  /* paper */
+  --surface-cool:  #FFFFFF;  /* weiße Wechselfläche auf Papier */
+  --hairline:      #E4DFD3;  /* paper-line */
 
-  /* Onyx — Fast-Schwarz, Farbe der primären Buttons + Footer + dunkle Sektionen */
-  --onyx:       oklch(0.2221 0      89.88);   /* identisch zu --ink im Quellsystem */
-  --onyx-soft:  oklch(0.2931 0.0095 268.35);  /* Button-Hover */
+  /* Ink — dunkle Flächen (Footer, Abschluss) */
+  --onyx:       #0B0F14;
+  --onyx-soft:  #3A3F4A;
 
   /* ──────────────────────────── COLOR — Semantic tokens ────────────────────────────
-     WICHTIG — Rollenwechsel ggü. der alten Iris/Violet-Palette:
-     --primary ist jetzt Onyx (Button-Farbe), NICHT mehr die Markenfarbe.
-     --accent ist jetzt das Akzentblau (Marke/Links/Badges), wie zuvor Violet. */
-  --bg:            oklch(1 0 0);          /* page — reines Weiß */
-  --bg-elev-1:     var(--surface);        /* cards, panels */
-  --bg-elev-2:     oklch(1 0 0);          /* modals, floating surfaces */
-  --bg-subtle:     var(--surface-cool);   /* muted fills */
+     v3: Die Hauptaktion ist die violette Pill (--primary = --brand), wie auf der Website.
+     --accent bleibt die Markenfarbe für Links, Fokus und Bildmarke. */
+  --bg:            var(--paper-warm);     /* page — warmes Papier */
+  --bg-elev-1:     #FFFFFF;               /* cards, panels */
+  --bg-elev-2:     #FFFFFF;               /* modals, floating surfaces */
+  --bg-subtle:     var(--paper);          /* muted fills */
   --bg-inverse:    var(--onyx);           /* Footer, dunkle Sektionen */
 
   --fg:            var(--ink);            /* primary text */
   --fg-1:          var(--body);           /* body */
   --fg-2:          var(--subtle);         /* secondary */
   --fg-muted:      var(--faint);          /* hints, timestamps */
-  --fg-on-primary: oklch(1 0 0);
-  --fg-on-dark:    oklch(1 0 0);            /* höchste Emphase auf dunklem Grund (Footer, dunkle Sektionen) */
-  --fg-on-dark-1:  oklch(1 0 0 / 0.85);      /* Überschriften/Links auf dunklem Grund */
-  --fg-on-dark-2:  oklch(1 0 0 / 0.7);       /* Fließtext auf dunklem Grund */
-  --fg-on-dark-muted: oklch(1 0 0 / 0.5);    /* Hinweise auf dunklem Grund */
-  --border-on-dark:   oklch(1 0 0 / 0.12);   /* Trennlinien auf dunklem Grund */
+  --fg-on-primary: #FFFFFF;
+  --fg-on-dark:    #FFFFFF;
+  --fg-on-dark-1:  rgb(255 255 255 / 0.85);
+  --fg-on-dark-2:  rgb(255 255 255 / 0.72);
+  --fg-on-dark-muted: rgb(255 255 255 / 0.55);
+  --border-on-dark:   rgb(255 255 255 / 0.14);
 
-  --primary:       var(--onyx);           /* Button-/CTA-Farbe */
-  --primary-hover: var(--onyx-soft);
-  --primary-soft:  var(--surface-cool);
+  --primary:       var(--brand);          /* Hauptaktion (Pill) */
+  --primary-hover: var(--brand-strong);
+  --primary-soft:  var(--brand-tint);
 
-  --accent:        var(--brand);          /* Marken-/Interaktionsfarbe */
+  --accent:        var(--brand);
   --accent-hover:  var(--brand-strong);
   --accent-soft:   var(--brand-tint);
 
   --border:        var(--hairline);
-  --border-soft:   oklch(0 0 0 / 0.06);
-  --border-strong: oklch(0.86 0.014 255 / 1);
-  --ring:          oklch(0.5696 0.2176 259.85 / 0.35);  /* Brand-Fokusring */
+  --border-soft:   rgb(11 15 20 / 0.06);
+  --border-strong: #8B93A1;
+  --ring:          rgb(107 92 246 / 0.4);  /* Fokusring Violett */
 
   /* ──────────────────────────── PRODUKT-UI (duktus PRO App) ────────────────
      Diese Tokens gelten fuer die Anwendung, nicht fuer die Marketing-Flaeche.
@@ -135,14 +147,14 @@
      Statusfarben tragen in einer klinischen Dokumentation Bedeutung. Sie
      duerfen nie allein durch Farbe kommunizieren — immer Farbe UND Wort
      (Regel auf /designsystem). */
-  --success:      oklch(0.5842 0.1225 158.1);
-  --success-tint: oklch(0.9557 0.0324 158.1);
-  --warning:      oklch(0.6842 0.1441 68.5);
-  --warning-tint: oklch(0.9612 0.0439 78.5);
-  --danger:       oklch(0.577 0.245 27.325);
-  --danger-tint:  oklch(0.9524 0.0296 24.6);
-  --info:         oklch(0.5696 0.2176 259.85);
-  --info-tint:    oklch(0.9315 0.0318 246.7);
+  --success:      #047857;
+  --success-tint: #ECFDF5;
+  --warning:      #B45309;
+  --warning-tint: #FFFBEB;
+  --danger:       #B91C1C;
+  --danger-tint:  #FEF2F2;
+  --info:         #6B5CF6;
+  --info-tint:    #F0EDFF;
 
   /* Flaechen der Anwendung: Arbeitsflaeche, Panel, Seitenleiste. */
   --app-canvas: oklch(0.9825 0.0045 258.32);
@@ -203,9 +215,9 @@
   /* ──────────────────────────── RADIUS ──────────────────────────── */
   /* Größere Radien als zuvor — Teil des "Healthier"-Looks (Pill-Nav, XXL-Karten). */
   --radius-sm:    6px;
-  --radius-md:    10px;
+  --radius-md:    8px;
   --radius-lg:    12px;
-  --radius-xl:    16px;
+  --radius-xl:    20px;
   --radius-2xl:   22px;
   --radius-card:      24px;   /* Standardkarten, neu */
   --radius-card-lg:   32px;   /* große Sektionen/Hero-Karten, neu */
@@ -216,15 +228,15 @@
   /* Alte aura-shadow-Namen bleiben erhalten (Kompatibilität mit bestehenden
      Konsument:innen), Werte jetzt blau-stichig statt ink-stichig.
      Neue shadow-*-Namen entsprechen 1:1 dem Lovable-Quellcode. */
-  --aura-shadow:        0 14px 40px -22px oklch(0.22 0.02 262 / 0.24);
-  --aura-shadow-hover:  0 28px 60px -32px oklch(0.22 0.02 262 / 0.34);
+  --aura-shadow:        0 4px 16px -4px rgba(11,15,20,0.10);
+  --aura-shadow-hover:  0 24px 48px -24px rgba(11,15,20,0.22);
   --aura-shadow-inset:  inset 0 1px 0 0 oklch(1 0 0 / 0.55);
-  --aura-shadow-sm:     0 1px 2px 0 oklch(0.22 0.02 262 / 0.06), 0 1px 1px 0 oklch(0.22 0.02 262 / 0.04);
+  --aura-shadow-sm:     0 1px 2px rgba(11,15,20,0.06);
   --aura-focus-ring:    0 0 0 2px var(--brand-tint-strong);
 
-  --shadow-nav:    0 14px 40px -18px oklch(0.22 0.02 262 / 0.28);
-  --shadow-card:   0 14px 40px -22px oklch(0.22 0.02 262 / 0.24);
-  --shadow-lift:   0 28px 60px -32px oklch(0.22 0.02 262 / 0.34);
+  --shadow-nav:    0 4px 16px -4px rgba(11,15,20,0.10);
+  --shadow-card:   0 4px 16px -4px rgba(11,15,20,0.10);
+  --shadow-lift:   0 24px 48px -24px rgba(11,15,20,0.22);
   --shadow-hero:   0 50px 110px -50px oklch(0.22 0.02 262 / 0.45);
   --shadow-brand:  0 20px 44px -22px oklch(0.5696 0.2176 259.85 / 0.5);
 
