@@ -1,10 +1,10 @@
 {
-  "checked_at": "2026-11-18T10:42:58.888Z",
+  "checked_at": "2026-11-18T19:05:44.158Z",
   "overall": "operational",
   "components": {
     "web": {
       "status": "operational",
-      "latency_ms": 621
+      "latency_ms": 607
     },
     "chat": {
       "status": "operational"
@@ -19,5 +19,5 @@
       "status": "operational"
     }
   },
-  "backend_latency_ms": 161
+  "backend_latency_ms": 129
 }
