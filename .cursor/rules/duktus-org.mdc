@@ -1,0 +1,27 @@
+---
+description: Duktus Org-, Deploy- und Markenregeln
+alwaysApply: true
+---
+
+## Gültige Agentenregeln seit 12.11.2026 (Vorrang vor allen älteren Abschnitten)
+
+1. **Org und Deploy.** Quelle und Deploy laufen nur über Repos der GitHub-Organisation `duktus-labs`:
+   `controlled-substance` (App/Backend), `spectroscopy` (duktus-pro.de, bis zur Trennung auch docs. und tools.),
+   `reagent-kit` (tools.-Kandidat), `lab-notebook` (docs.-Kandidat), `reaction-monitor` (status.).
+   `jqttk/duktus-pro-slop`, `jqttk/website`, `jqttk/duktus-status` sind keine Arbeitsorte mehr.
+   Keine neuen Verweise, Branches, Secrets oder Skripte auf diese alten Pfade.
+2. **Nur PRs.** Agenten öffnen Pull Requests. Kein Merge, kein Push auf `main`, kein Deploy, kein manuell
+   gestarteter Workflow, kein `cdk deploy`, kein `aws s3 sync`, keine Änderung an Secrets, Variablen oder IAM.
+   Deploy-Skills (z. B. `deploy-web`) gelten nicht für Agenten.
+3. **Entscheidung nur durch Joshua:** Botschaft und Claims, Preise und Tarife, Rechtstexte (Impressum,
+   Datenschutz, AGB/Nutzungsbedingungen, AVV, Einwilligungstexte, Cookies, Zweckbestimmung),
+   Standort- und Subunternehmer-Aussagen. Agenten liefern dazu höchstens einen Entwurf im PR, markiert
+   „Entwurf – Rechtsprüfung nötig, keine Rechtsberatung“, nie als fertigen Live-Text.
+4. **Keine personenbezogenen Daten** in Code, Tests, Tickets, PR-Texten, Screenshots oder Logs. Keine Zugangsdaten.
+5. **Marke.** Ansprache: Sie. Primärer Aufruf: „Pilotzugang anfragen“ (Variante „beantragen“ ist offen).
+   Keine „82 %“-Zahl, keine ISO-/Zertifikat-Badges, keine Sterne oder Bewertungen, kein „DSGVO-konform“ als Zusage.
+6. **Standort.** Keine Standortaussage ergänzen oder ändern, bis Joshua einen Wortlaut freigegeben hat.
+   Danach nur nach dem Muster Aussage – Beleg – Stand – Grenze, nie „alles in Deutschland“, nie „Frankfurt“
+   ohne Beleg. Entwurf: Linear DUK-125 und DUK-144.
+7. **Website-Freeze bis 13.11.2026:** PRs vorbereiten, nicht vor Freigabe mergen lassen.
+8. **Ein Thema pro PR**, Beschreibung mit Ticketnummer (DUK-…), Ergebnis, Prüfung, offene Frage.

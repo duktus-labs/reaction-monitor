@@ -32,5 +32,4 @@ No npm dependencies — Node 20+ only.
 
 ## Configuration
 
-`config.json` holds the monitored URLs and thresholds. When the
-production domain `duktus-pro.de` goes live, update `targets` there.
+`config.json` holds the monitored URLs (`targets`) and thresholds.
