@@ -154,6 +154,7 @@ body {
 .banner[data-status="degraded"] { background: var(--deg-bg); border-color: var(--deg-border); }
 .banner[data-status="down"]     { background: var(--down-bg); border-color: var(--down-border); }
 .banner[data-status="maintenance"] { background: var(--maint-bg); border-color: var(--maint-border); }
+.banner[data-status="none"] { background: var(--bg); border-color: var(--none); }
 
 .banner-icon {
   width: 28px;
@@ -169,6 +170,7 @@ body {
 .banner[data-status="degraded"] .banner-icon { background: var(--deg); color: var(--deg-ink); }
 .banner[data-status="down"] .banner-icon { background: var(--down); color: oklch(0.99 0.005 27); }
 .banner[data-status="maintenance"] .banner-icon { background: var(--maint); color: oklch(0.99 0.005 248); }
+.banner[data-status="none"] .banner-icon { background: var(--none); color: var(--text); }
 
 .banner-title { font-size: 15px; font-weight: 600; letter-spacing: -0.006em; }
 .banner-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
@@ -231,6 +233,7 @@ body {
   background: var(--maint);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--maint) 18%, transparent);
 }
+.dot[data-status="none"] { background: var(--none); box-shadow: none; }
 .row-pct {
   font-size: 12.5px;
   color: var(--muted);

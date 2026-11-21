@@ -42,6 +42,13 @@ function relativeTime(iso) {
   return h === 1 ? 'vor 1 Stunde' : 'vor ' + h + ' Stunden';
 }
 
+function isCurrent(status) {
+  var checked = status && typeof status.checked_at === 'string'
+    ? Date.parse(status.checked_at) : NaN;
+  var age = Date.now() - checked;
+  return Number.isFinite(age) && age >= 0 && age <= STALE_MINUTES * 60000;
+}
+
 function formatDate(key) {
   var p = key.split('-');
   return p[2] + '.' + p[1] + '.' + p[0];
@@ -160,7 +167,10 @@ function statusIcon(kind) {
 function renderBanner(status, animate) {
   var host = document.getElementById('banner');
   host.replaceChildren();
-  host.dataset.status = status.overall;
+  var current = isCurrent(status);
+  var kind = current && Object.prototype.hasOwnProperty.call(STATUS_DE, status.overall)
+    ? status.overall : 'none';
+  host.dataset.status = kind;
   host.classList.toggle('banner--in', animate);
 
   var titles = {
@@ -168,13 +178,16 @@ function renderBanner(status, animate) {
     degraded: 'Eingeschränkter Betrieb',
     down: 'Störung',
     maintenance: 'Geplante Wartung',
+    none: 'Status derzeit nicht aktuell',
   };
 
   var icon = el('span', 'banner-icon');
-  icon.appendChild(statusIcon(status.overall));
+  icon.appendChild(statusIcon(kind));
 
   var sub;
-  if (status.overall === 'down') {
+  if (!current) {
+    sub = 'Aktuelle Statusdaten sind nicht verfügbar.';
+  } else if (kind === 'down') {
     sub = 'Wir haben das Problem erkannt und arbeiten an einer Lösung.';
   } else if (status.overall === 'maintenance' && status.note) {
     sub = status.note;
@@ -184,7 +197,7 @@ function renderBanner(status, animate) {
 
   var text = el('div');
   text.append(
-    el('div', 'banner-title', titles[status.overall] || 'Status unbekannt'),
+    el('div', 'banner-title', titles[kind] || 'Status unbekannt'),
     el('div', 'banner-sub', sub),
   );
   host.append(icon, text);
@@ -192,10 +205,11 @@ function renderBanner(status, animate) {
 
 function renderStale(status) {
   var host = document.getElementById('stale');
-  var ageMin = (Date.now() - new Date(status.checked_at).getTime()) / 60000;
-  if (ageMin > STALE_MINUTES) {
-    host.textContent = 'Hinweis: Die Statusdaten sind möglicherweise '
-      + 'veraltet (letzte Prüfung ' + relativeTime(status.checked_at) + ').';
+  if (!isCurrent(status)) {
+    var checked = status && Date.parse(status.checked_at);
+    host.textContent = Number.isFinite(checked) && checked <= Date.now()
+      ? 'Letzte Prüfung ' + relativeTime(status.checked_at) + '.'
+      : 'Der Zeitpunkt der letzten Prüfung ist nicht verfügbar.';
     host.hidden = false;
   } else {
     host.hidden = true;
@@ -208,7 +222,9 @@ function renderComponents(status, uptime, animate) {
 
   for (var i = 0; i < ORDER.length; i++) {
     var key = ORDER[i];
-    var cur = (status.components && status.components[key]) || { status: 'down' };
+    var cur = (status.components && status.components[key]) || { status: 'none' };
+    var kind = isCurrent(status) && Object.prototype.hasOwnProperty.call(STATUS_DE, cur.status)
+      ? cur.status : 'none';
     var cells = dayCells(uptime, key, HISTORY_DAYS);
     var pct = uptimePct(cells);
     var pctText = pct === null
@@ -219,12 +235,12 @@ function renderComponents(status, uptime, animate) {
     row.style.setProperty('--i', i);
     row.setAttribute('role', 'listitem');
     row.setAttribute('aria-label',
-      LABELS[key] + ': ' + STATUS_DE[cur.status] + ', ' + pctText);
+      LABELS[key] + ': ' + (kind === 'none' ? 'keine aktuellen Daten' : STATUS_DE[kind]) + ', ' + pctText);
 
     var top = el('div', 'row-top');
     var name = el('span', 'row-name');
     var dot = el('span', 'dot');
-    dot.dataset.status = cur.status;
+    dot.dataset.status = kind;
     dot.setAttribute('aria-hidden', 'true');
     name.append(dot, el('span', null, LABELS[key]));
     top.append(name, el('span', 'row-pct', pctText));
@@ -265,7 +281,7 @@ function renderIncidents(incidents, status) {
   host.replaceChildren();
 
   var hasManual = incidents && incidents.length > 0;
-  var liveOutage = status && status.overall === 'down';
+  var liveOutage = isCurrent(status) && status.overall === 'down';
 
   // Automatic notice while a real outage is ongoing — no manual edit needed.
   if (liveOutage) {
@@ -308,6 +324,8 @@ function renderIncidents(incidents, status) {
       }
       host.append(card);
     }
+  } else if (!incidents) {
+    host.append(el('div', 'incident-empty', 'Störungsmeldungen derzeit nicht abrufbar.'));
   } else if (!liveOutage) {
     host.append(el('div', 'incident-empty',
       'Keine Störungen in den letzten 14 Tagen gemeldet.'));
@@ -319,7 +337,7 @@ function load() {
   Promise.all([
     getJson('data/status.json'),
     getJson('data/uptime.json').catch(function () { return { days: [] }; }),
-    getJson('data/incidents.json').catch(function () { return []; }),
+    getJson('data/incidents.json').catch(function () { return null; }),
   ]).then(function (results) {
     renderBanner(results[0], animate);
     renderStale(results[0]);
@@ -330,8 +348,11 @@ function load() {
   }).catch(function () {
     var banner = document.getElementById('banner');
     banner.replaceChildren();
-    banner.dataset.status = 'down';
+    banner.dataset.status = 'none';
     banner.append(el('div', 'banner-title', 'Status derzeit nicht abrufbar'));
+    renderComponents({ components: {} }, { days: [] }, false);
+    renderStale({});
+    renderIncidents(null, {});
   });
 }
 
