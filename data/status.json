@@ -1,10 +1,10 @@
 {
-  "checked_at": "2026-11-22T02:22:21.976Z",
+  "checked_at": "2026-11-22T09:58:32.985Z",
   "overall": "operational",
   "components": {
     "web": {
       "status": "operational",
-      "latency_ms": 528
+      "latency_ms": 534
     },
     "chat": {
       "status": "operational"
@@ -19,6 +19,5 @@
       "status": "operational"
     }
   },
-  "note": "Planmäßige nächtliche Wartung (00:00–06:00 Uhr)",
-  "backend_latency_ms": 109
+  "backend_latency_ms": 119
 }
